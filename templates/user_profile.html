@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}'s Profile - Campus Connect{% endblock %}
+
+{% block styles %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Profile Header */
+    .profile-header {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+
+    .profile-header:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .profile-header h2 {
+        color: var(--secondary-color);
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 1rem;
+    }
+
+    .profile-info {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .profile-info p {
+        margin: 0;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .profile-info strong {
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+
+    /* Bio Section */
+    .bio {
+        background: var(--background-color);
+        padding: 1.5rem;
+        border-radius: var(--border-radius-sm);
+        margin-top: 1rem;
+    }
+
+    .bio h4 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bio p {
+        color: var(--text-color);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Social Links */
+    .social-links {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .social-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1.2rem;
+        border-radius: var(--border-radius-sm);
+        text-decoration: none;
+        color: white;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .social-link.linkedin {
+        background-color: #0077b5;
+    }
+
+    .social-link.github {
+        background-color: #333;
+    }
+
+    .social-link:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+    }
+
+    /* Projects Section */
+    .projects-section {
+        margin-top: 3rem;
+    }
+
+    .projects-section h3 {
+        color: var(--secondary-color);
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .project-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        border: 1px solid var(--border-color);
+        position: relative;
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .project-card h4 {
+        color: var(--secondary-color);
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .project-description {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .technologies {
+        background: var(--background-color);
+        padding: 1rem;
+        border-radius: var(--border-radius-sm);
+        margin-bottom: 1rem;
+    }
+
+    .technologies strong {
+        color: var(--secondary-color);
+    }
+
+    .completion-date {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .project-link:hover {
+        color: var(--primary-dark);
+        transform: translateX(5px);
+    }
+
+    .no-projects {
+        text-align: center;
+        padding: 3rem;
+        background: var(--background-color);
+        border-radius: var(--border-radius);
+        color: var(--text-color);
+        grid-column: 1 / -1;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 1rem;
+        }
+
+        .profile-header {
+            padding: 1.5rem;
+        }
+
+        .profile-header h2 {
+            font-size: 2rem;
+        }
+
+        .social-links {
+            flex-direction: column;
+        }
+
+        .social-link {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .projects-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header" data-aos="fade-up">
+        <h2>{{ user.username }}'s Profile</h2>
+        <div class="profile-info">
+            {% if user.college_name %}
+            <p><i class="fas fa-university"></i> <strong>College:</strong> {{ user.college_name }}</p>
+            {% endif %}
+            {% if user.department %}
+            <p><i class="fas fa-graduation-cap"></i> <strong>Department:</strong> {{ user.department }}</p>
+            {% endif %}
+            {% if user.graduation_year %}
+            <p><i class="fas fa-calendar-alt"></i> <strong>Graduation Year:</strong> {{ user.graduation_year }}</p>
+            {% endif %}
+            {% if user.bio %}
+            <div class="bio">
+                <h4><i class="fas fa-user"></i> About</h4>
+                <p>{{ user.bio }}</p>
+            </div>
+            {% endif %}
+            <div class="social-links">
+                {% if user.linkedin_url %}
+                <a href="{{ user.linkedin_url }}" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i> LinkedIn
+                </a>
+                {% endif %}
+                {% if user.github_url %}
+                <a href="{{ user.github_url }}" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="projects-section">
+        <h3>Projects</h3>
+        <div class="projects-grid">
+            {% for project in user.projects %}
+            <div class="project-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <h4>{{ project.title }}</h4>
+                <p class="project-description">{{ project.description }}</p>
+                {% if project.technologies %}
+                <div class="technologies">
+                    <strong>Technologies:</strong> {{ project.technologies }}
+                </div>
+                {% endif %}
+                {% if project.completion_date %}
+                <p class="completion-date">
+                    <i class="far fa-calendar-alt"></i>
+                    <strong>Completed:</strong> {{ project.completion_date }}
+                </p>
+                {% endif %}
+                {% if project.project_url %}
+                <a href="{{ project.project_url }}" target="_blank" class="project-link">
+                    <i class="fas fa-external-link-alt"></i> View Project
+                </a>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="no-projects">
+                <i class="fas fa-folder-open fa-3x"></i>
+                <br><br>
+                No projects added yet.
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        once: true
+    });
+</script>
+{% endblock %} 

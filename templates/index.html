@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Connect - Home{% endblock %}
+
+{% block styles %}
+<style>
+    .home-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+        text-align: center;
+        padding: 4rem 2rem;
+        margin-bottom: 3rem;
+        background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+        border-radius: var(--border-radius);
+        color: white;
+    }
+
+    .welcome-section h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .welcome-section p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    /* Users Section */
+    .users-section {
+        display: grid;
+        gap: 2rem;
+    }
+
+    .user-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+        transition: var(--transition);
+    }
+
+    .user-section:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .user-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-info h3 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .user-link {
+        color: var(--secondary-color);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .user-link:hover {
+        color: var(--primary-color);
+    }
+
+    .user-college {
+        color: var(--text-color);
+        margin: 0.5rem 0 0;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Projects Carousel */
+    .projects-carousel {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding: 0.5rem;
+        margin: 0 -0.5rem;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .projects-carousel::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .projects-carousel::-webkit-scrollbar-track {
+        background: var(--background-color);
+        border-radius: 4px;
+    }
+
+    .projects-carousel::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 4px;
+    }
+
+    .projects-carousel.active {
+        cursor: grabbing;
+    }
+
+    /* Project Cards */
+    .project-card {
+        flex: 0 0 300px;
+        background: white;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        padding: 1rem;
+        transition: var(--transition);
+    }
+
+    .project-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+        margin-bottom: 1rem;
+    }
+
+    .project-title {
+        color: var(--secondary-color);
+        margin: 0 0 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .completion-date {
+        color: var(--text-color);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-description {
+        color: var(--text-color);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    /* Technologies */
+    .technologies-container {
+        margin-bottom: 1rem;
+    }
+
+    .technologies-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .technology-tag {
+        background: var(--background-color);
+        color: var(--text-color);
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+    }
+
+    /* Card Footer */
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .project-link,
+    .author-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-link:hover,
+    .author-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Empty States */
+    .no-projects,
+    .no-users {
+        text-align: center;
+        padding: 2rem;
+        background: var(--background-color);
+        border-radius: var(--border-radius);
+        color: var(--text-color);
+    }
+
+    .no-users {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .no-users i {
+        font-size: 3rem;
+        color: var(--secondary-color);
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        border-radius: var(--border-radius-sm);
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .home-container {
+            padding: 1rem;
+        }
+
+        .welcome-section {
+            padding: 3rem 1rem;
+        }
+
+        .welcome-section h1 {
+            font-size: 2rem;
+        }
+
+        .project-card {
+            flex: 0 0 280px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="welcome-section" data-aos="fade-down">
+        <h1>Welcome to Campus Connect</h1>
+        <p>Discover amazing projects and connect with talented students!</p>
+    </div>
+
+    <div class="users-section">
+        {% for user in users %}
+        <div class="user-section" data-aos="fade-up">
+            <div class="user-header">
+                <div class="user-info">
+                    <h3>
+                        <a href="{{ url_for('user_profile', username=user.username) }}" class="user-link">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                    </h3>
+                    {% if user.college_name %}
+                    <p class="user-college"><i class="fas fa-university"></i> {{ user.college_name }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if user.projects %}
+            <div class="projects-carousel">
+                {% for project in user.projects %}
+                <div class="project-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="card-header">
+                        <h4 class="project-title">{{ project.title }}</h4>
+                        {% if project.completion_date %}
+                        <span class="completion-date">
+                            <i class="far fa-calendar-alt"></i> {{ project.completion_date }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body">
+                        <p class="project-description">
+                            {{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}
+                        </p>
+                        
+                        {% if project.technologies %}
+                        <div class="technologies-container">
+                            <div class="technologies-list">
+                                {% for tech in project.technologies.split(',') %}
+                                <span class="technology-tag">{{ tech.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer">
+                        {% if project.project_url %}
+                        <a href="{{ project.project_url }}" target="_blank" class="project-link">
+                            <i class="fas fa-external-link-alt"></i> View Project
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('user_profile', username=project.author.username) }}" class="author-link">
+                            <i class="fas fa-info-circle"></i> More Details
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-projects">No projects yet</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="no-users" data-aos="fade-up">
+            <i class="fas fa-users-slash"></i>
+            <p>No users have registered yet. Be the first one!</p>
+            <a href="{{ url_for('register') }}" class="btn-primary">Register Now</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize horizontal scroll for project carousels
+    document.querySelectorAll('.projects-carousel').forEach(carousel => {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        carousel.addEventListener('mousedown', (e) => {
+            isDown = true;
+            carousel.classList.add('active');
+            startX = e.pageX - carousel.offsetLeft;
+            scrollLeft = carousel.scrollLeft;
+        });
+
+        carousel.addEventListener('mouseleave', () => {
+            isDown = false;
+            carousel.classList.remove('active');
+        });
+
+        carousel.addEventListener('mouseup', () => {
+            isDown = false;
+            carousel.classList.remove('active');
+        });
+
+        carousel.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - carousel.offsetLeft;
+            const walk = (x - startX) * 2;
+            carousel.scrollLeft = scrollLeft - walk;
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Connect - Connect with College Students{% endblock %}
+
+{% block styles %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 4rem 0;
+        margin: -2rem -2rem 4rem -2rem;
+    }
+
+    .hero-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+
+    .hero-content {
+        animation: fadeInUp 1s ease;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .hero-text {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+
+    .hero-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeInRight 1s ease;
+    }
+
+    .hero-image img {
+        max-width: 100%;
+        height: auto;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 4rem 0;
+    }
+
+    .features-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .feature-card h3 {
+        color: var(--secondary-color);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .hero-container {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 2rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .features-container {
+            grid-template-columns: repeat(2, 1fr);
+            padding: 0 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 3rem 0;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .features-container {
+            grid-template-columns: 1fr;
+            padding: 0 1rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+        }
+    }
+
+    /* Projects Showcase Section */
+    .projects-showcase {
+        padding: 4rem 0;
+        background-color: var(--background-color);
+        margin: 0 -2rem;
+    }
+
+    .projects-showcase-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .projects-showcase-title {
+        font-size: 2.5rem;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+
+    .projects-showcase-description {
+        color: var(--text-color);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .project-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: var(--transition);
+        border: 1px solid var(--border-color);
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .project-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .project-title {
+        font-size: 1.25rem;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .project-author {
+        font-size: 0.9rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-content {
+        padding: 1.5rem;
+    }
+
+    .project-description {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .project-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .project-tag {
+        background: var(--background-color);
+        color: var(--text-color);
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+    }
+
+    .project-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .project-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-link:hover {
+        text-decoration: underline;
+    }
+
+    .view-all-projects {
+        text-align: center;
+        margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+        .projects-showcase {
+            padding: 3rem 0;
+        }
+
+        .projects-showcase-title {
+            font-size: 2rem;
+        }
+
+        .projects-grid {
+            grid-template-columns: 1fr;
+            padding: 0 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1 class="hero-title">Connect with Fellow Students</h1>
+            <p class="hero-text">
+                Showcase your projects, discover talented peers, and build your professional network within your college community.
+            </p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+                <a href="{{ url_for('explore') }}" class="btn btn-outline">Explore Projects</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/landing-illustration.svg') }}" alt="Campus Connect Illustration">
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="features-container">
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="0">
+            <h3>Create Your Portfolio</h3>
+            <p>Showcase your projects and skills to potential collaborators and employers.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+            <h3>Connect with Peers</h3>
+            <p>Find and connect with students who share your interests and goals.</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+            <h3>Discover Projects</h3>
+            <p>Explore interesting projects and opportunities for collaboration.</p>
+        </div>
+    </div>
+</div>
+
+<div class="projects-showcase">
+    <div class="projects-showcase-header">
+        <h2 class="projects-showcase-title">Featured Projects</h2>
+        <p class="projects-showcase-description">
+            Discover amazing projects created by talented students across different colleges.
+        </p>
+    </div>
+
+    <div class="projects-grid">
+        {% for project in projects %}
+        <div class="project-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+            <div class="project-header">
+                <h3 class="project-title">{{ project.title }}</h3>
+                <div class="project-author">
+                    <i class="fas fa-user"></i>
+                    <a href="{{ url_for('user_profile', username=project.author.username) }}">{{ project.author.username }}</a>
+                    {% if project.author.college_name %}
+                    <span>• {{ project.author.college_name }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="project-content">
+                <p class="project-description">
+                    {{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}
+                </p>
+                
+                {% if project.technologies %}
+                <div class="project-tags">
+                    {% for tech in project.technologies.split(',') %}
+                    <span class="project-tag">{{ tech.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="project-footer">
+                {% if project.project_url %}
+                <a href="{{ project.project_url }}" class="project-link" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> View Project
+                </a>
+                {% endif %}
+                <a href="{{ url_for('user_profile', username=project.author.username) }}" class="project-link">
+                    <i class="fas fa-info-circle"></i> More Details
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-projects">
+            <p>No projects available yet. Be the first to share your work!</p>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Join Now</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="view-all-projects">
+        <a href="{{ url_for('explore') }}" class="btn btn-primary">View All Projects</a>
+    </div>
+</div>
+{% endblock %} 

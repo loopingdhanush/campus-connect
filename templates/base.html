@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Campus Connect{% endblock %}</title>
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --border-color: #e1e4e8;
+            --error-color: #dc3545;
+            --error-bg: #f8d7da;
+            --error-border: #f5c6cb;
+            --border-radius: 10px;
+            --border-radius-sm: 5px;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --focus-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        .navbar {
+            background-color: var(--secondary-color);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .nav-brand a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--border-radius-sm);
+            background-color: var(--error-bg);
+            color: var(--error-color);
+            border: 1px solid var(--error-border);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 0.8rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{{ url_for('index') }}">Campus Connect</a>
+        </div>
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
+                <a href="{{ url_for('add_project') }}">Add Project</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert" data-aos="fade-down">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Campus Connect. All rights reserved.</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

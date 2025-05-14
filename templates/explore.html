@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    /* Explore Page Styles */
+    .explore-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .explore-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .explore-header h1 {
+        color: var(--secondary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .explore-header p {
+        color: #666;
+        font-size: 1.2rem;
+    }
+
+    .explore-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .user-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        transition: var(--transition);
+    }
+
+    .user-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .user-info {
+        margin-bottom: 2rem;
+    }
+
+    .user-info h2 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+
+    .user-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .user-bio {
+        margin-bottom: 1rem;
+        color: #666;
+    }
+
+    .user-links {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .social-link {
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .social-link.linkedin {
+        background-color: #0077b5;
+    }
+
+    .social-link.github {
+        background-color: #333;
+    }
+
+    .social-link:hover {
+        transform: translateY(-2px);
+        opacity: 0.9;
+    }
+
+    .projects-carousel {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .project-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #eee;
+    }
+
+    .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .project-header h4 {
+        color: var(--secondary-color);
+        margin: 0;
+    }
+
+    .completion-date {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .project-description {
+        margin-bottom: 1rem;
+        color: #666;
+    }
+
+    .technologies-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .technology-tag {
+        background: var(--background-color);
+        color: var(--secondary-color);
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+    }
+
+    .project-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .explore-page {
+            padding: 1rem;
+        }
+
+        .explore-header h1 {
+            font-size: 2rem;
+        }
+
+        .user-details {
+            grid-template-columns: 1fr;
+        }
+
+        .projects-carousel {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="explore-page">
+    <div class="explore-header">
+        <h1>Explore Campus Connect</h1>
+        <p>Discover talented students and their amazing projects</p>
+    </div>
+
+    <div class="explore-content">
+        {% for user in users %}
+        <div class="user-card">
+            <div class="user-info">
+                <h2>{{ user.username }}</h2>
+                <div class="user-details">
+                    <p><strong>College:</strong> {{ user.college_name or 'Not specified' }}</p>
+                    <p><strong>Department:</strong> {{ user.department or 'Not specified' }}</p>
+                    <p><strong>Graduation Year:</strong> {{ user.graduation_year or 'Not specified' }}</p>
+                </div>
+                {% if user.bio %}
+                <div class="user-bio">
+                    <p>{{ user.bio }}</p>
+                </div>
+                {% endif %}
+                <div class="user-links">
+                    {% if user.linkedin_url %}
+                    <a href="{{ user.linkedin_url }}" class="social-link linkedin" target="_blank">LinkedIn</a>
+                    {% endif %}
+                    {% if user.github_url %}
+                    <a href="{{ user.github_url }}" class="social-link github" target="_blank">GitHub</a>
+                    {% endif %}
+                    <a href="{{ url_for('user_profile', username=user.username) }}" class="btn btn-outline">View Profile</a>
+                </div>
+            </div>
+
+            {% if user.projects %}
+            <div class="user-projects">
+                <h3>Projects</h3>
+                <div class="projects-carousel">
+                    {% for project in user.projects %}
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h4>{{ project.title }}</h4>
+                            {% if project.completion_date %}
+                            <span class="completion-date">{{ project.completion_date }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="project-description">{{ project.description }}</p>
+                        {% if project.technologies %}
+                        <div class="technologies-container">
+                            <div class="technologies-list">
+                                {% for tech in project.technologies.split(',') %}
+                                <span class="technology-tag">{{ tech.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if project.project_url %}
+                        <a href="{{ project.project_url }}" class="project-link" target="_blank">View Project</a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
