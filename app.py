@@ -1,312 +1,197 @@
-{% extends "base.html" %}
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
-{% block title %}{{ user.username }}'s Profile - Campus Connect{% endblock %}
+app = Flask(__name__)
+# Use environment variable for secret key in production
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
-{% block styles %}
-<style>
-    .profile-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
+# Database configuration
+if os.environ.get('DATABASE_URL'):
+    # Production database (if DATABASE_URL is set)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+else:
+    # Development database
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///campus_connect.db'
 
-    /* Profile Header */
-    .profile-header {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-    }
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    .profile-header:hover {
-        box-shadow: var(--shadow-md);
-    }
+# Initialize extensions
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-    .profile-header h2 {
-        color: var(--secondary-color);
-        font-size: 2.5rem;
-        margin-bottom: 2rem;
-        border-bottom: 2px solid var(--border-color);
-        padding-bottom: 1rem;
-    }
+# Models
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+    college_name = db.Column(db.String(200))
+    department = db.Column(db.String(100))
+    graduation_year = db.Column(db.Integer)
+    bio = db.Column(db.Text)
+    linkedin_url = db.Column(db.String(200))
+    github_url = db.Column(db.String(200))
+    projects = db.relationship('Project', backref='author', lazy=True)
 
-    .profile-info {
-        display: grid;
-        gap: 1.5rem;
-    }
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    project_url = db.Column(db.String(200))
+    technologies = db.Column(db.String(200))
+    completion_date = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    .profile-info p {
-        margin: 0;
-        color: var(--text-color);
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-    .profile-info strong {
-        color: var(--secondary-color);
-        font-weight: 600;
-    }
+# Routes
+@app.route('/')
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    # Get the latest projects for the landing page
+    projects = Project.query.order_by(Project.id.desc()).limit(6).all()
+    return render_template('landing.html', projects=projects)
 
-    /* Bio Section */
-    .bio {
-        background: var(--background-color);
-        padding: 1.5rem;
-        border-radius: var(--border-radius-sm);
-        margin-top: 1rem;
-    }
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        college_name = request.form.get('college_name')
+        department = request.form.get('department')
+        graduation_year = request.form.get('graduation_year')
+        
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+            return redirect(url_for('register'))
+        
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered')
+            return redirect(url_for('register'))
+        
+        user = User(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(password),
+            college_name=college_name,
+            department=department,
+            graduation_year=graduation_year
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash('Registration successful!')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
 
-    .bio h4 {
-        color: var(--secondary-color);
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+        flash('Invalid username or password')
+    
+    return render_template('login.html')
 
-    .bio p {
-        color: var(--text-color);
-        line-height: 1.6;
-        margin: 0;
-    }
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
-    /* Social Links */
-    .social-links {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
 
-    .social-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.8rem 1.2rem;
-        border-radius: var(--border-radius-sm);
-        text-decoration: none;
-        color: white;
-        font-weight: 500;
-        transition: var(--transition);
-    }
+@app.route('/user/<username>')
+def user_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('user_profile.html', user=user)
 
-    .social-link.linkedin {
-        background-color: #0077b5;
-    }
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        current_user.college_name = request.form.get('college_name')
+        current_user.department = request.form.get('department')
+        current_user.graduation_year = request.form.get('graduation_year')
+        current_user.bio = request.form.get('bio')
+        current_user.linkedin_url = request.form.get('linkedin_url')
+        current_user.github_url = request.form.get('github_url')
+        
+        db.session.commit()
+        flash('Profile updated successfully!')
+        return redirect(url_for('profile'))
+    
+    return render_template('edit_profile.html')
 
-    .social-link.github {
-        background-color: #333;
-    }
+@app.route('/add_project', methods=['GET', 'POST'])
+@login_required
+def add_project():
+    if request.method == 'POST':
+        project = Project(
+            title=request.form.get('title'),
+            description=request.form.get('description'),
+            project_url=request.form.get('project_url'),
+            technologies=request.form.get('technologies'),
+            completion_date=request.form.get('completion_date'),
+            user_id=current_user.id
+        )
+        db.session.add(project)
+        db.session.commit()
+        flash('Project added successfully!')
+        return redirect(url_for('profile'))
+    
+    return render_template('add_project.html')
 
-    .social-link:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.1);
-    }
+@app.route('/delete_project/<int:project_id>', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    if project.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    db.session.delete(project)
+    db.session.commit()
+    return jsonify({'message': 'Project deleted successfully'})
 
-    /* Projects Section */
-    .projects-section {
-        margin-top: 3rem;
-    }
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', user=current_user)
 
-    .projects-section h3 {
-        color: var(--secondary-color);
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--border-color);
-    }
+@app.route('/explore')
+def explore():
+    users = User.query.all()
+    return render_template('explore.html', users=users)
 
-    .projects-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-    }
+def init_db():
+    # Create all tables
+    with app.app_context():
+        db.drop_all()  # This will drop all tables
+        db.create_all()  # This will create all tables with the new schema
 
-    .project-card {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-        border: 1px solid var(--border-color);
-        position: relative;
-    }
-
-    .project-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .project-card h4 {
-        color: var(--secondary-color);
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-    }
-
-    .project-description {
-        color: var(--text-color);
-        margin-bottom: 1rem;
-        line-height: 1.6;
-    }
-
-    .technologies {
-        background: var(--background-color);
-        padding: 1rem;
-        border-radius: var(--border-radius-sm);
-        margin-bottom: 1rem;
-    }
-
-    .technologies strong {
-        color: var(--secondary-color);
-    }
-
-    .completion-date {
-        color: var(--text-color);
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .project-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-        transition: var(--transition);
-    }
-
-    .project-link:hover {
-        color: var(--primary-dark);
-        transform: translateX(5px);
-    }
-
-    .no-projects {
-        text-align: center;
-        padding: 3rem;
-        background: var(--background-color);
-        border-radius: var(--border-radius);
-        color: var(--text-color);
-        grid-column: 1 / -1;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .profile-container {
-            padding: 1rem;
-        }
-
-        .profile-header {
-            padding: 1.5rem;
-        }
-
-        .profile-header h2 {
-            font-size: 2rem;
-        }
-
-        .social-links {
-            flex-direction: column;
-        }
-
-        .social-link {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .projects-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="profile-container">
-    <div class="profile-header" data-aos="fade-up">
-        <h2>{{ user.username }}'s Profile</h2>
-        <div class="profile-info">
-            {% if user.college_name %}
-            <p><i class="fas fa-university"></i> <strong>College:</strong> {{ user.college_name }}</p>
-            {% endif %}
-            {% if user.department %}
-            <p><i class="fas fa-graduation-cap"></i> <strong>Department:</strong> {{ user.department }}</p>
-            {% endif %}
-            {% if user.graduation_year %}
-            <p><i class="fas fa-calendar-alt"></i> <strong>Graduation Year:</strong> {{ user.graduation_year }}</p>
-            {% endif %}
-            {% if user.roll_number %}
-            <p><i class="fas fa-id-card"></i> <strong>Roll Number:</strong> {{ user.roll_number }}</p>
-            {% endif %}
-            {% if user.bio %}
-            <div class="bio">
-                <h4><i class="fas fa-user"></i> About</h4>
-                <p>{{ user.bio }}</p>
-            </div>
-            {% endif %}
-            <div class="social-links">
-                {% if user.linkedin_url %}
-                <a href="{{ user.linkedin_url }}" target="_blank" class="social-link linkedin">
-                    <i class="fab fa-linkedin"></i> LinkedIn
-                </a>
-                {% endif %}
-                {% if user.github_url %}
-                <a href="{{ user.github_url }}" target="_blank" class="social-link github">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="projects-section">
-        <h3>Projects</h3>
-        <div class="projects-grid">
-            {% for project in user.projects %}
-            <div class="project-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                <h4>{{ project.title }}</h4>
-                <p class="project-description">{{ project.description }}</p>
-                {% if project.technologies %}
-                <div class="technologies">
-                    <strong>Technologies:</strong> {{ project.technologies }}
-                </div>
-                {% endif %}
-                {% if project.completion_date %}
-                <p class="completion-date">
-                    <i class="far fa-calendar-alt"></i>
-                    <strong>Completed:</strong> {{ project.completion_date }}
-                </p>
-                {% endif %}
-                {% if project.project_url %}
-                <a href="{{ project.project_url }}" target="_blank" class="project-link">
-                    <i class="fas fa-external-link-alt"></i> View Project
-                </a>
-                {% endif %}
-            </div>
-            {% else %}
-            <p class="no-projects">
-                <i class="fas fa-folder-open fa-3x"></i>
-                <br><br>
-                No projects added yet.
-            </p>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-    AOS.init({
-        duration: 800,
-        once: true
-    });
-</script>
-{% endblock %} 
+if __name__ == '__main__':
+    init_db()  # Initialize the database
+    app.run(debug=True) 
